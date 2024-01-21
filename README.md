@@ -1,2 +1,2 @@
 # Password Manager
-A minimal password manager for Windows using Electron, React and TailwindCSS.
+A minimal password manager using Electron, React and TailwindCSS.
