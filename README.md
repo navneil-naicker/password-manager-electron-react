@@ -1,2 +1,2 @@
-# electron-react-tailwindcss-boilerplate
-Boilerplate for Electron, React and TailwindCSS. 
+# Password Manager using Electron React with TailwindCSS
+A minimal password manager for Windows.
