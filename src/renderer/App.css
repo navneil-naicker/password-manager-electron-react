@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    background: #EFF2F6;
+    font-family: 'Roboto', sans-serif;
+}
+
+.pagelet {
+    padding: 10px;
+}
+
+.search-box input {
+    padding-top: 0.27rem;
+    padding-bottom: 0.27rem;
+}
+
+.backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.add-model {
+    width: 40%;
+    top: 5%;
+    left: 25%;
+    -webkit-box-shadow: 5px 5px 15px 5px #000000; 
+            box-shadow: 5px 5px 15px 5px #000000;
+}
