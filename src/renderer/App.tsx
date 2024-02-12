@@ -2,6 +2,7 @@ import React, { FormEvent, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import Header from '../components/Header';
+import { FaCirclePlus, FaCopy, FaGear, FaPencil, FaPlus, FaTrash } from "react-icons/fa6";
 import './App.css';
 
 const { ipcRenderer } = window as any;
@@ -131,19 +132,19 @@ function Hello() {
   };
   const copyUsernameToClipboard = (index: any) => {
     var find: any = products.find((v, i) => i === index);
-    if(find.username.length > 0){
+    if (find.username.length > 0) {
       navigator.clipboard.writeText(find.username);
     }
   };
   const copyPasswordToClipboard = (index: any) => {
     var find: any = products.find((v, i) => i === index);
-    if(find.password.length > 0){
+    if (find.password.length > 0) {
       navigator.clipboard.writeText(find.password);
     }
   };
   const copyUrlToClipboard = (index: any) => {
     var find: any = products.find((v, i) => i === index);
-    if(find.url.length > 0){
+    if (find.url.length > 0) {
       navigator.clipboard.writeText(find.url);
     }
   };
@@ -152,7 +153,7 @@ function Hello() {
       <AddModelComponent />
       <div className="p-3 pagelet">
         <Header />
-        <div className="border-2 mb-5 bg-white p-3 grid grid-cols-5 gap-3 rounded">
+        <div className="border-2 mb-5 bg-white p-3 grid grid-cols-2 gap-3 rounded">
           <div className="search-box">
             <input
               type="search"
@@ -161,13 +162,22 @@ function Hello() {
               onChange={serch}
             />
           </div>
-          <div className="ml-2">
+          <div className="text-right">
             <button
-              className="bg-gray-500 text-white px-3 py-1.5 rounded text-sm"
+              className="mr-2 bg-gray-500 text-white px-3 py-1.5 rounded text-sm"
               title="Create new record"
               onClick={() => setAddModel('show')}
             >
-              New Record
+              <span className='inline-block mr-2 align-middle'><FaCirclePlus /></span>
+              <span className='inline-block'>New Record</span>
+            </button>
+            <button
+              className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
+              title="Settings"
+              onClick={() => setAddModel('show')}
+            >
+              <span className='inline-block mr-2 align-middle'><FaGear /></span>
+              <span className='inline-block'>Settings</span>
             </button>
           </div>
         </div>
@@ -185,52 +195,52 @@ function Hello() {
             <tbody>
               {products.map((product: any, index) => (
                 <tr key={index}>
-                  <td className='appname_text'>{product.name}</td>
+                  <td className="appname_text">{product.name}</td>
                   <td>
-                    <span className='l_text'>{product.username}</span>{' '}
+                    <span className="l_text">{product.username}</span>{' '}
                     <button
                       className="copy-button"
                       title="Copy username to clipboard"
                       onClick={() => copyUsernameToClipboard(index)}
                     >
-                      Copy
+                      <span><FaCopy /></span>
                     </button>
                   </td>
                   <td>
-                    <span className='l_text'>{product.password}</span>{' '}
+                    <span className="l_text">{product.password}</span>{' '}
                     <button
                       className="copy-button"
                       title="Copy password to clipboard"
                       onClick={() => copyPasswordToClipboard(index)}
                     >
-                      Copy
+                      <span><FaCopy /></span>
                     </button>
                   </td>
                   <td>
-                    <span className='l_text'>{product.url}</span>{' '}
+                    <span className="l_text">{product.url}</span>{' '}
                     <button
                       className="copy-button"
                       title="Copy URL to clipboard"
                       onClick={() => copyUrlToClipboard(index)}
                     >
-                      Copy
+                      <span><FaCopy /></span>
                     </button>
                   </td>
                   <td>
                     <button
-                      className="mr-3"
+                      className="mr-3 hover:text-sky-500 align-baseline"
                       title="Edit this record"
                       onClick={editRecord}
                     >
-                      Edit
+                      <FaPencil />
                     </button>
-                    {'|'}
+                    <span className='align-text-bottom'>|</span>
                     <button
-                      className="ml-3"
+                      className="ml-3 hover:text-sky-500 align-baseline"
                       title="Delete this record"
                       onClick={() => deleteRecord(index)}
                     >
-                      Delete
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
