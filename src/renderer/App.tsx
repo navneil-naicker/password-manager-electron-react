@@ -9,24 +9,27 @@ const { ipcRenderer } = window as any;
 
 function Hello() {
   const [addModel, setAddModel] = useState('hidden');
-  const [products, setProducts] = useState([]);
+  const [itemsList, setItemsList] = useState([]);
+  const [FilteredItems, setFilteredItems] = useState([]);
   React.useEffect(() => {
     (window as any).Products.products().then((result: any) => {
-      setProducts(result);
+      setItemsList(result);
+      setFilteredItems(result);
     });
   }, []);
   const editRecord = () => {
     alert('Edit record');
   };
   const deleteRecord = (index: any) => {
-    var y: any = products.find((v, i) => i === index);
+    var find: any = itemsList.find((v, i) => i === index);
     if (
       window.confirm(
-        `You are about to delete record for ${y.name}. Are you sure?`,
+        `You are about to delete record for ${find.name}. Are you sure?`,
       )
     ) {
-      var x = products.filter((v, i) => i !== index);
-      setProducts(x);
+      var x = itemsList.filter((v, i) => i !== index);
+      setItemsList(x);
+      setFilteredItems(x);
       ipcRenderer.send('add-new-record', x);
     }
   };
@@ -49,9 +52,9 @@ function Hello() {
       password: target.password.value,
       url: target.url.value,
     };
-    var curr_products: any = products;
-    curr_products.push(form);
-    ipcRenderer.send('add-new-record', curr_products);
+    var items: any = itemsList;
+    items.push(form);
+    ipcRenderer.send('add-new-record', items);
     setAddModel('hidden');
   };
   const AddModelComponent = () => {
@@ -113,37 +116,33 @@ function Hello() {
       </div>
     );
   };
-  const serch = (searchValue: any) => {
-    const curr_products = products;
-    let DisplayData: any = curr_products;
+  const search = (searchValue: any) => {
+    let items: any = [...itemsList];
     var s = searchValue.target.value;
-    DisplayData = products
-      ?.filter(
-        (row: any) =>
-          row?.name?.match(new RegExp(s, 'i')) ||
-          row?.username?.match(new RegExp(s, 'i')) ||
-          row?.password?.match(new RegExp(s, 'i')) ||
-          row?.url?.match(new RegExp(s, 'i')),
-      )
-      ?.map((items: any) => {
-        return items;
-      });
-    setProducts(DisplayData);
+    items = items?.filter((row: any) =>
+      row?.name?.match(new RegExp(s, 'i')) ||
+      row?.username?.match(new RegExp(s, 'i')) ||
+      row?.password?.match(new RegExp(s, 'i')) ||
+      row?.url?.match(new RegExp(s, 'i')),
+    )?.map((items: any) => {
+      return items;
+    });
+    setFilteredItems(items);
   };
   const copyUsernameToClipboard = (index: any) => {
-    var find: any = products.find((v, i) => i === index);
+    var find: any = itemsList.find((v, i) => i === index);
     if (find.username.length > 0) {
       navigator.clipboard.writeText(find.username);
     }
   };
   const copyPasswordToClipboard = (index: any) => {
-    var find: any = products.find((v, i) => i === index);
+    var find: any = itemsList.find((v, i) => i === index);
     if (find.password.length > 0) {
       navigator.clipboard.writeText(find.password);
     }
   };
   const copyUrlToClipboard = (index: any) => {
-    var find: any = products.find((v, i) => i === index);
+    var find: any = itemsList.find((v, i) => i === index);
     if (find.url.length > 0) {
       navigator.clipboard.writeText(find.url);
     }
@@ -159,7 +158,8 @@ function Hello() {
               type="search"
               className="border-2 px-3 w-70 rounded text-sm"
               placeholder="Search..."
-              onChange={serch}
+              maxLength={28}
+              onChange={search}
             />
           </div>
           <div className="text-right">
@@ -193,7 +193,8 @@ function Hello() {
               </tr>
             </thead>
             <tbody>
-              {products.map((product: any, index) => (
+              {FilteredItems.length === 0 && <tr><td colSpan={5}>Nope! Nothing here.</td></tr>}
+              {FilteredItems.map((product: any, index) => (
                 <tr key={index}>
                   <td className="appname_text">{product.name}</td>
                   <td>
