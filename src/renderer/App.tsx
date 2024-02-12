@@ -208,7 +208,7 @@ function Hello() {
                     </button>
                   </td>
                   <td>
-                    <span className="l_text">{product.password}</span>{' '}
+                    <span className="l_text">{"password123456789".replace(/./g, '*')}</span>{' '}
                     <button
                       className="copy-button"
                       title="Copy password to clipboard"
