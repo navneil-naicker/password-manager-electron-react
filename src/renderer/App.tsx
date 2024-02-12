@@ -1,16 +1,33 @@
+import React, { FormEvent, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import { FormEvent, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Header from '../components/Header';
+import './App.css';
+
+const { ipcRenderer } = window as any;
 
 function Hello() {
   const [addModel, setAddModel] = useState('hidden');
+  const [products, setProducts] = useState([]);
+  React.useEffect(() => {
+    (window as any).Products.products().then((result: any) => {
+      setProducts(result);
+    });
+  }, []);
   const editRecord = () => {
     alert('Edit record');
   };
-  const deleteRecord = () => {
-    alert('Delete record');
+  const deleteRecord = (index: any) => {
+    var y: any = products.find((v, i) => i === index);
+    if (
+      window.confirm(
+        `You are about to delete record for ${y.name}. Are you sure?`,
+      )
+    ) {
+      var x = products.filter((v, i) => i !== index);
+      setProducts(x);
+      ipcRenderer.send('add-new-record', x);
+    }
   };
   const Backdrop = () => {
     return <div className="backdrop fixed w-full h-full z-50"></div>;
@@ -24,7 +41,18 @@ function Hello() {
       url: { value: string };
     };
     const id = uuidv4();
-  }
+    var form = {
+      id: id,
+      name: target.name.value,
+      username: target.username.value,
+      password: target.password.value,
+      url: target.url.value,
+    };
+    var curr_products: any = products;
+    curr_products.push(form);
+    ipcRenderer.send('add-new-record', curr_products);
+    setAddModel('hidden');
+  };
   const AddModelComponent = () => {
     return (
       <div className={`add-model-state ${addModel}`}>
@@ -38,19 +66,31 @@ function Hello() {
             </div>
             <div className="mb-3">
               <label className="block text-sm">Name</label>
-              <input className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full" name='name' />
+              <input
+                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+                name="name"
+              />
             </div>
             <div className="mb-3">
               <label className="block text-sm">Username</label>
-              <input className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full" name='username' />
+              <input
+                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+                name="username"
+              />
             </div>
             <div className="mb-3">
               <label className="block text-sm">Password</label>
-              <input className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full" name='password' />
+              <input
+                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+                name="password"
+              />
             </div>
             <div className="mb-4">
               <label className="block text-sm">URL</label>
-              <input className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full" name='url' />
+              <input
+                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+                name="url"
+              />
             </div>
             <div className="text-right">
               <button
@@ -72,6 +112,41 @@ function Hello() {
       </div>
     );
   };
+  const serch = (searchValue: any) => {
+    const curr_products = products;
+    let DisplayData: any = curr_products;
+    var s = searchValue.target.value;
+    DisplayData = products
+      ?.filter(
+        (row: any) =>
+          row?.name?.match(new RegExp(s, 'i')) ||
+          row?.username?.match(new RegExp(s, 'i')) ||
+          row?.password?.match(new RegExp(s, 'i')) ||
+          row?.url?.match(new RegExp(s, 'i')),
+      )
+      ?.map((items: any) => {
+        return items;
+      });
+    setProducts(DisplayData);
+  };
+  const copyUsernameToClipboard = (index: any) => {
+    var find: any = products.find((v, i) => i === index);
+    if(find.username.length > 0){
+      navigator.clipboard.writeText(find.username);
+    }
+  };
+  const copyPasswordToClipboard = (index: any) => {
+    var find: any = products.find((v, i) => i === index);
+    if(find.password.length > 0){
+      navigator.clipboard.writeText(find.password);
+    }
+  };
+  const copyUrlToClipboard = (index: any) => {
+    var find: any = products.find((v, i) => i === index);
+    if(find.url.length > 0){
+      navigator.clipboard.writeText(find.url);
+    }
+  };
   return (
     <div>
       <AddModelComponent />
@@ -83,55 +158,83 @@ function Hello() {
               type="search"
               className="border-2 px-3 w-70 rounded text-sm"
               placeholder="Search..."
+              onChange={serch}
             />
           </div>
           <div className="ml-2">
             <button
               className="bg-gray-500 text-white px-3 py-1.5 rounded text-sm"
               title="Create new record"
-              onClick={() => setAddModel('')}
+              onClick={() => setAddModel('show')}
             >
               New Record
             </button>
           </div>
         </div>
         <div className="relative overflow-x-auto">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-300 dark:bg-gray-700 dark:text-gray-400">
+          <table className="table">
+            <thead>
               <tr>
-                <th scope="col" className="px-6 py-3">
-                  Name
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Username
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Password
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  URL
-                </th>
-                <th scope="col" className="px-6 py-3">
-                  Action
-                </th>
+                <th scope="col">Name</th>
+                <th scope="col">Username</th>
+                <th scope="col">Password</th>
+                <th scope="col">URL</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="bg-white border-b dark:border-gray-700">
-                <th className="px-6 py-4">Apple MacBook Pro 17</th>
-                <td className="px-6 py-4">Silver</td>
-                <td className="px-6 py-4">Laptop</td>
-                <td className="px-6 py-4">$2999</td>
-                <td className="px-6 py-4">
-                  <button title="Edit this record" onClick={editRecord}>
-                    Edit
-                  </button>{' '}
-                  |{' '}
-                  <button title="Delete this record" onClick={deleteRecord}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              {products.map((product: any, index) => (
+                <tr key={index}>
+                  <td className='appname_text'>{product.name}</td>
+                  <td>
+                    <span className='l_text'>{product.username}</span>{' '}
+                    <button
+                      className="copy-button"
+                      title="Copy username to clipboard"
+                      onClick={() => copyUsernameToClipboard(index)}
+                    >
+                      Copy
+                    </button>
+                  </td>
+                  <td>
+                    <span className='l_text'>{product.password}</span>{' '}
+                    <button
+                      className="copy-button"
+                      title="Copy password to clipboard"
+                      onClick={() => copyPasswordToClipboard(index)}
+                    >
+                      Copy
+                    </button>
+                  </td>
+                  <td>
+                    <span className='l_text'>{product.url}</span>{' '}
+                    <button
+                      className="copy-button"
+                      title="Copy URL to clipboard"
+                      onClick={() => copyUrlToClipboard(index)}
+                    >
+                      Copy
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="mr-3"
+                      title="Edit this record"
+                      onClick={editRecord}
+                    >
+                      Edit
+                    </button>
+                    {'|'}
+                    <button
+                      className="ml-3"
+                      title="Delete this record"
+                      onClick={() => deleteRecord(index)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
