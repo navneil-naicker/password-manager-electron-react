@@ -14,19 +14,22 @@ import './App.css';
 
 const { ipcRenderer } = window as any;
 
-function Hello() {
+function Main() {
   const [modelState, setModelState] = useState('hidden');
   const [itemsList, setItemsList] = useState([]);
   const [FilteredItems, setFilteredItems] = useState([]);
+
   React.useEffect(() => {
-    (window as any).Products.products().then((result: any) => {
+    (window as any).Electron.items().then((result: any) => {
       setItemsList(result);
       setFilteredItems(result);
     });
   }, []);
+
   const editRecord = () => {
     alert('Edit record');
   };
+
   const deleteRecord = (index: any) => {
     var find: any = itemsList.find((v, i) => i === index);
     if (
@@ -40,6 +43,7 @@ function Hello() {
       ipcRenderer.send('add-new-record', x);
     }
   };
+
   const handleAddRecordSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const target = event.target as typeof event.target & {
@@ -62,6 +66,7 @@ function Hello() {
     ipcRenderer.send('add-new-record', items);
     setModelState('hidden');
   };
+
   const search = (searchValue: any) => {
     let items: any = [...itemsList];
     var s = searchValue.target.value;
@@ -78,27 +83,28 @@ function Hello() {
       });
     setFilteredItems(items);
   };
+
   const copyUsernameToClipboard = (index: any) => {
     var find: any = itemsList.find((v, i) => i === index);
     if (find.username.length > 0) {
       navigator.clipboard.writeText(find.username);
     }
   };
+
   const copyPasswordToClipboard = (index: any) => {
     var find: any = itemsList.find((v, i) => i === index);
     if (find.password.length > 0) {
       navigator.clipboard.writeText(find.password);
     }
   };
+
   const copyUrlToClipboard = (index: any) => {
     var find: any = itemsList.find((v, i) => i === index);
     if (find.url.length > 0) {
       navigator.clipboard.writeText(find.url);
     }
   };
-  const addNewRecord = () => {
-    setModelState('show');
-  };
+  
   return (
     <div>
       <div id="addEditRecordModel" className={modelState}>
@@ -115,6 +121,7 @@ function Hello() {
               name="name"
               required
               maxLength={255}
+              type='text'
             />
           </div>
           <div className="mb-3">
@@ -124,6 +131,7 @@ function Hello() {
               name="username"
               required
               maxLength={255}
+              type='text'
             />
           </div>
           <div className="mb-3">
@@ -133,6 +141,7 @@ function Hello() {
               name="password"
               required
               maxLength={255}
+              type='password'
             />
           </div>
           <div className="mb-4">
@@ -142,6 +151,7 @@ function Hello() {
               name="url"
               required
               maxLength={255}
+              type='url'
             />
           </div>
           <div className="text-right">
@@ -167,7 +177,7 @@ function Hello() {
           <div className="search-box">
             <input
               type="search"
-              className="border-2 px-3 w-70 rounded text-sm"
+              className="border-2 px-3 w-80 rounded text-sm"
               placeholder="Search..."
               maxLength={28}
               onChange={search}
@@ -177,7 +187,7 @@ function Hello() {
             <button
               className="mr-2 bg-gray-500 text-white px-3 py-1.5 rounded text-sm"
               title="Create new record"
-              onClick={() => addNewRecord()}
+              onClick={() => setModelState('show')}
             >
               <span className="inline-block mr-2 align-middle">
                 <FaCirclePlus />
@@ -187,7 +197,7 @@ function Hello() {
             <button
               className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
               title="Settings"
-              onClick={() => setModelState('show')}
+              onClick={() => alert("Create a local environment variable named PM_PATH and set its value to the path of an empty JSON file.")}
             >
               <span className="inline-block mr-2 align-middle">
                 <FaGear />
@@ -208,12 +218,12 @@ function Hello() {
               </tr>
             </thead>
             <tbody>
-              {FilteredItems.length === 0 && (
+            {(FilteredItems && FilteredItems.length === 0) && (
                 <tr>
                   <td colSpan={5}>Nope! Nothing here.</td>
                 </tr>
               )}
-              {FilteredItems.map((product: any, index) => (
+              {FilteredItems && FilteredItems.map((product: any, index) => (
                 <tr key={index}>
                   <td className="appname_text">{product.name}</td>
                   <td>
@@ -285,7 +295,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Hello />} />
+        <Route path="/" element={<Main />} />
       </Routes>
     </Router>
   );

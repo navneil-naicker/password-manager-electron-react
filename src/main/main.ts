@@ -15,8 +15,11 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
-let store_location = "C:\\Users\\navzme\\OneDrive\\posts.json";
-let l_data: any = [];
+let store_location: any = process.env.PM_PATH;
+let no_data_file = true;
+if(store_location && store_location.length > 0){
+  no_data_file = false;
+}
 
 class AppUpdater {
   constructor() {
@@ -114,17 +117,17 @@ const createWindow = async () => {
 };
 
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
   if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-function getProducts() {
+function getItems() {
   const fs = require('fs');
-  l_data = JSON.parse(fs.readFileSync(store_location));
-  return l_data;
+  if (fs.existsSync(store_location)) {
+    return JSON.parse(fs.readFileSync(store_location));
+  }
+  return [];
 }
 
 app
@@ -134,7 +137,7 @@ app
     app.on('activate', () => {
       if (mainWindow === null) createWindow();
     });
-    ipcMain.handle('products', getProducts);
+    ipcMain.handle('items', getItems);
     ipcMain.on('add-new-record', (event, data) => {
       const fs = require('fs');
       try {
