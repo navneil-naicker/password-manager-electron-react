@@ -2,13 +2,20 @@ import React, { FormEvent, useState } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import Header from '../components/Header';
-import { FaCirclePlus, FaCopy, FaGear, FaPencil, FaPlus, FaTrash } from "react-icons/fa6";
+import {
+  FaCirclePlus,
+  FaCopy,
+  FaGear,
+  FaPencil,
+  FaPlus,
+  FaTrash,
+} from 'react-icons/fa6';
 import './App.css';
 
 const { ipcRenderer } = window as any;
 
 function Hello() {
-  const [addModel, setAddModel] = useState('hidden');
+  const [modelState, setModelState] = useState('hidden');
   const [itemsList, setItemsList] = useState([]);
   const [FilteredItems, setFilteredItems] = useState([]);
   React.useEffect(() => {
@@ -33,9 +40,6 @@ function Hello() {
       ipcRenderer.send('add-new-record', x);
     }
   };
-  const Backdrop = () => {
-    return <div className="backdrop fixed w-full h-full z-50"></div>;
-  };
   const handleAddRecordSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const target = event.target as typeof event.target & {
@@ -54,79 +58,24 @@ function Hello() {
     };
     var items: any = itemsList;
     items.push(form);
+    items.sort((a: any, b: any) => a.name.localeCompare(b.name));
     ipcRenderer.send('add-new-record', items);
-    setAddModel('hidden');
-  };
-  const AddModelComponent = () => {
-    return (
-      <div className={`add-model-state ${addModel}`}>
-        <Backdrop />
-        <div className="add-model bg-white border-2 z-[51] fixed">
-          <form className="p-3" onSubmit={handleAddRecordSubmit}>
-            <div className="mb-3">
-              <h4 className="font-bold border-solid border-b-2 pb-2">
-                Add Record
-              </h4>
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm">Name</label>
-              <input
-                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
-                name="name"
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm">Username</label>
-              <input
-                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
-                name="username"
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm">Password</label>
-              <input
-                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
-                name="password"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm">URL</label>
-              <input
-                className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
-                name="url"
-              />
-            </div>
-            <div className="text-right">
-              <button
-                className="px-5 py-1.5 rounded text-sm mr-2"
-                type="button"
-                onClick={() => setAddModel('hidden')}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-gray-500 text-white px-5 py-1.5 rounded text-sm"
-                type="submit"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
+    setModelState('hidden');
   };
   const search = (searchValue: any) => {
     let items: any = [...itemsList];
     var s = searchValue.target.value;
-    items = items?.filter((row: any) =>
-      row?.name?.match(new RegExp(s, 'i')) ||
-      row?.username?.match(new RegExp(s, 'i')) ||
-      row?.password?.match(new RegExp(s, 'i')) ||
-      row?.url?.match(new RegExp(s, 'i')),
-    )?.map((items: any) => {
-      return items;
-    });
+    items = items
+      ?.filter(
+        (row: any) =>
+          row?.name?.match(new RegExp(s, 'i')) ||
+          row?.username?.match(new RegExp(s, 'i')) ||
+          row?.password?.match(new RegExp(s, 'i')) ||
+          row?.url?.match(new RegExp(s, 'i')),
+      )
+      ?.map((items: any) => {
+        return items;
+      });
     setFilteredItems(items);
   };
   const copyUsernameToClipboard = (index: any) => {
@@ -147,9 +96,71 @@ function Hello() {
       navigator.clipboard.writeText(find.url);
     }
   };
+  const addNewRecord = () => {
+    setModelState('show');
+  };
   return (
     <div>
-      <AddModelComponent />
+      <div id="addEditRecordModel" className={modelState}>
+        <form className="modal-content" onSubmit={handleAddRecordSubmit}>
+          <div className="mb-3">
+            <h4 className="font-bold border-solid border-b-2 pb-2">
+              Add Record
+            </h4>
+          </div>
+          <div className="mb-3">
+            <label className="block text-sm">Name</label>
+            <input
+              className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+              name="name"
+              required
+              maxLength={255}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="block text-sm">Username</label>
+            <input
+              className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+              name="username"
+              required
+              maxLength={255}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="block text-sm">Password</label>
+            <input
+              className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+              name="password"
+              required
+              maxLength={255}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm">URL</label>
+            <input
+              className="border border-slate-400 px-3 py-1 w-70 rounded text-sm w-full"
+              name="url"
+              required
+              maxLength={255}
+            />
+          </div>
+          <div className="text-right">
+            <button
+              className="px-5 py-1.5 rounded text-sm mr-2"
+              type="button"
+              onClick={() => setModelState('hidden')}
+            >
+              Cancel
+            </button>
+            <button
+              className="bg-gray-500 text-white px-5 py-1.5 rounded text-sm"
+              type="submit"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
       <div className="p-3 pagelet">
         <Header />
         <div className="border-2 mb-5 bg-white p-3 grid grid-cols-2 gap-3 rounded">
@@ -166,18 +177,22 @@ function Hello() {
             <button
               className="mr-2 bg-gray-500 text-white px-3 py-1.5 rounded text-sm"
               title="Create new record"
-              onClick={() => setAddModel('show')}
+              onClick={() => addNewRecord()}
             >
-              <span className='inline-block mr-2 align-middle'><FaCirclePlus /></span>
-              <span className='inline-block'>New Record</span>
+              <span className="inline-block mr-2 align-middle">
+                <FaCirclePlus />
+              </span>
+              <span className="inline-block">New Record</span>
             </button>
             <button
               className="bg-sky-600 text-white px-3 py-1.5 rounded text-sm"
               title="Settings"
-              onClick={() => setAddModel('show')}
+              onClick={() => setModelState('show')}
             >
-              <span className='inline-block mr-2 align-middle'><FaGear /></span>
-              <span className='inline-block'>Settings</span>
+              <span className="inline-block mr-2 align-middle">
+                <FaGear />
+              </span>
+              <span className="inline-block">Settings</span>
             </button>
           </div>
         </div>
@@ -193,7 +208,11 @@ function Hello() {
               </tr>
             </thead>
             <tbody>
-              {FilteredItems.length === 0 && <tr><td colSpan={5}>Nope! Nothing here.</td></tr>}
+              {FilteredItems.length === 0 && (
+                <tr>
+                  <td colSpan={5}>Nope! Nothing here.</td>
+                </tr>
+              )}
               {FilteredItems.map((product: any, index) => (
                 <tr key={index}>
                   <td className="appname_text">{product.name}</td>
@@ -204,17 +223,23 @@ function Hello() {
                       title="Copy username to clipboard"
                       onClick={() => copyUsernameToClipboard(index)}
                     >
-                      <span><FaCopy /></span>
+                      <span>
+                        <FaCopy />
+                      </span>
                     </button>
                   </td>
                   <td>
-                    <span className="l_text">{"password123456789".replace(/./g, '*')}</span>{' '}
+                    <span className="l_text">
+                      {'password123456789'.replace(/./g, '*')}
+                    </span>{' '}
                     <button
                       className="copy-button"
                       title="Copy password to clipboard"
                       onClick={() => copyPasswordToClipboard(index)}
                     >
-                      <span><FaCopy /></span>
+                      <span>
+                        <FaCopy />
+                      </span>
                     </button>
                   </td>
                   <td>
@@ -224,7 +249,9 @@ function Hello() {
                       title="Copy URL to clipboard"
                       onClick={() => copyUrlToClipboard(index)}
                     >
-                      <span><FaCopy /></span>
+                      <span>
+                        <FaCopy />
+                      </span>
                     </button>
                   </td>
                   <td>
@@ -235,7 +262,7 @@ function Hello() {
                     >
                       <FaPencil />
                     </button>
-                    <span className='align-text-bottom'>|</span>
+                    <span className="align-text-bottom">|</span>
                     <button
                       className="ml-3 hover:text-sky-500 align-baseline"
                       title="Delete this record"
